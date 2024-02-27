@@ -8,7 +8,7 @@ indent-width = 4
 
 [lint]
 select = ["ALL"]
-ignore = ["D", "ANN", "ARG"]
+ignore = ["D", "ANN", "ARG", "ISC001", "COM812", "RUF012"]
 
 [format]
 quote-style = "double"

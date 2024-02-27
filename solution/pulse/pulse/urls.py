@@ -6,14 +6,15 @@ urlpatterns = [
     # Built-in urls
     path("admin/", admin.site.urls),
     path(
-        "api-auth/", include(
-            "rest_framework.urls", namespace="rest_framework",
+        "api-auth/",
+        include(
+            "rest_framework.urls",
+            namespace="rest_framework",
         ),
     ),
-
     # API
-
     path("api/ping/", include("ping.urls")),
+    path("api/countries/", include("countries.urls")),
 ]
 
 if settings.DEBUG:
