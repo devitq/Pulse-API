@@ -63,12 +63,26 @@ WSGI_APPLICATION = "pulse.wsgi.application"
 
 POSTGRES_CONN = os.getenv("POSTGRES_CONN")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        **dj_database_url.parse(POSTGRES_CONN),
-    },
-}
+POSTGRES_JDBC_URL = os.getenv("POSTGRES_JDBC_URL")
+
+if POSTGRES_CONN:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            **dj_database_url.parse(POSTGRES_CONN),
+        },
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DATABASE"),
+            "USER": os.getenv("POSTGRES_USERNAME"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("POSTGRES_HOST"),
+            "PORT": os.getenv("POSTGRES_PORT"),
+        },
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -103,6 +117,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+
+STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
