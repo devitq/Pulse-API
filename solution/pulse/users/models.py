@@ -34,5 +34,8 @@ class Profile(models.Model):
     )
     image = models.URLField(max_length=200, blank=True, null=True)
 
+    def is_authenticated(self):
+        return True
+
     def __str__(self):
         return self.login
