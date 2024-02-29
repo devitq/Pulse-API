@@ -15,7 +15,7 @@ urlpatterns = [
     # API
     path("api/ping", include("ping.urls")),
     path("api/countries", include("countries.urls")),
-    path("api/auth/", include("users.urls")),
+    path("api/", include("users.urls")),
 ]
 
 if settings.DEBUG:

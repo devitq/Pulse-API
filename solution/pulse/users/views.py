@@ -60,7 +60,7 @@ class RegisterUserApiView(APIView):
 
             if not (bool(re.match(password_pattern, password))):
                 error = {
-                    "message": "Your password does not meet our requirements"
+                    "error": "Your password does not meet our requirements"
                 }
                 return Response(
                     error,
@@ -125,9 +125,22 @@ class SigninUserApiView(APIView):
         return Response({"token": token})
 
 
-class ProtectedView(APIView):
+class ProfileMeApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        return Response({"message": "Authenticated", "user": str(user)})
+
+        profile = {
+            "login": user.login,
+            "email": user.email,
+            "countryCode": user.countryCode,
+            "isPublic": user.isPublic,
+        }
+
+        if user.phone is not None:
+            profile["phone"] = user.phone
+        if user.image is not None:
+            profile["image"] = user.image
+
+        return Response(profile)

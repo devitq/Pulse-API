@@ -19,11 +19,14 @@ class JWTAuthentication(BaseAuthentication):
             )
 
             user = Profile.objects.get(login=payload["login"])
-
-            return (user, None)
         except Profile.DoesNotExist:
-            raise AuthenticationFailed("Invalid token")
+            error = "Invalid token"
+            raise AuthenticationFailed(error) from None
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed("Token has expired")
+            error = "Token has expired"
+            raise AuthenticationFailed(error) from None
         except jwt.InvalidTokenError:
-            raise AuthenticationFailed("Invalid token")
+            error = "Invalid token"
+            raise AuthenticationFailed(error) from None
+        else:
+            return (user, None)
