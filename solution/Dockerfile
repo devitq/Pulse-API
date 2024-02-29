@@ -15,4 +15,4 @@ WORKDIR /app
 
 COPY . .
 
-CMD ["sh", "-c", "cd pulse && python3 manage.py migrate --fake countries && exec python3 manage.py runserver 0.0.0.0:$SERVER_PORT"]
+CMD ["sh", "-c", "cd pulse && python3 manage.py migrate && exec python3 manage.py runserver 0.0.0.0:$SERVER_PORT"]
