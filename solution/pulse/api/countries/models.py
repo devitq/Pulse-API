@@ -9,6 +9,7 @@ class Country(models.Model):
 
     class Meta:
         db_table = "countries"
+        managed = False
 
     def __str__(self):
         return self.name

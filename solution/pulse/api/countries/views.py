@@ -2,8 +2,8 @@ from django.conf import settings
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
-from countries.models import Country
-from countries.serializers import CountrySerializer
+from api.countries.models import Country
+from api.countries.serializers import CountrySerializer
 
 
 class CountryListView(ListAPIView):

@@ -6,7 +6,7 @@ from rest_framework.authentication import (
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from rest_framework.permissions import IsAuthenticated
 
-from users.models import Profile
+from api.users.models import Profile
 
 
 class JWTAuthentication(BaseAuthentication):

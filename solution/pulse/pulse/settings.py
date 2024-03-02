@@ -26,9 +26,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     # Developed apps
-    "ping.apps.PingConfig",
-    "countries.apps.CountriesConfig",
-    "users.apps.UsersConfig",
+    "api.ping.apps.PingConfig",
+    "api.countries.apps.CountriesConfig",
+    "api.users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -116,7 +116,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend"
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "users.authentication.JWTAuthentication",
+        "api.users.authentication.JWTAuthentication",
     ),
 }
 

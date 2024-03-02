@@ -1,7 +1,8 @@
-from countries.models import Country
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.utils.deconstruct import deconstructible
+
+from api.countries.models import Country
 
 
 @deconstructible

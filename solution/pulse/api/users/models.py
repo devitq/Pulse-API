@@ -4,7 +4,7 @@ from django.core.validators import (
 )
 from django.db import models
 
-from users.validators import CountryCodeValidator
+from api.users.validators import CountryCodeValidator
 
 
 class Profile(models.Model):
