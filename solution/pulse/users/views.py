@@ -1,4 +1,3 @@
-import re
 from datetime import timedelta
 
 import bcrypt
@@ -11,62 +10,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import Profile
-from users.serializers import UserSerializer
-
-MIN_PASSWORD_LEN = 6
-MAX_PASSWORD_LEN = 100
+from users.serializers import ProfileSerializer, UpdateProfileSerializer
 
 
 class RegisterUserApiView(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = ProfileSerializer(data=request.data)
 
         if serializer.is_valid():
-            if (
-                Profile.objects.filter(
-                    login=serializer.validated_data["login"]
-                ).first()
-                is not None
-            ):
-                return Response(
-                    {"error": "User with this login already exists"},
-                    status=status.HTTP_409_CONFLICT,
-                )
-            if (
-                Profile.objects.filter(
-                    email=serializer.validated_data["email"]
-                ).first()
-                is not None
-            ):
-                return Response(
-                    {"error": "User with this email already exists"},
-                    status=status.HTTP_409_CONFLICT,
-                )
-            if (
-                Profile.objects.filter(
-                    phone=serializer.validated_data["phone"]
-                ).first()
-                is not None
-            ):
-                return Response(
-                    {"error": "User with this phone already exists"},
-                    status=status.HTTP_409_CONFLICT,
-                )
+            errors = Profile.check_unique(None, serializer.validated_data)
+            if errors:
+                return Response(errors, status=status.HTTP_409_CONFLICT)
 
             password = serializer.validated_data["password"]
-            password_pattern = re.compile(
-                r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{6,100}$"
-            )
-
-            if not (bool(re.match(password_pattern, password))):
-                error = {
-                    "error": "Your password does not meet our requirements"
-                }
-                return Response(
-                    error,
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
             password_hash = bcrypt.hashpw(
                 password.encode("utf-8"), bcrypt.gensalt()
             ).decode("utf-8")
@@ -114,7 +70,7 @@ class SigninUserApiView(APIView):
 
         token = jwt.encode(
             {
-                "login": login,
+                "id": user.id,
                 "password": password,
                 "exp": timezone.now() + timedelta(hours=24),
             },
@@ -130,7 +86,23 @@ class ProfileMeApiView(APIView):
 
     def get(self, request):
         user = request.user
+        profile_data = self._get_profile_data(user)
+        return Response(profile_data)
 
+    def patch(self, request):
+        user = request.user
+        serializer = UpdateProfileSerializer(
+            user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            errors = Profile.check_unique(user.id, serializer.validated_data)
+            if errors:
+                return Response(errors, status=status.HTTP_409_CONFLICT)
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def _get_profile_data(self, user):
         profile = {
             "login": user.login,
             "email": user.email,
@@ -143,4 +115,4 @@ class ProfileMeApiView(APIView):
         if user.image is not None:
             profile["image"] = user.image
 
-        return Response(profile)
+        return profile

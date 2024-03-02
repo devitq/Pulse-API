@@ -1,34 +1,33 @@
 from django.core.validators import (
     MaxLengthValidator,
-    MinLengthValidator,
     RegexValidator,
 )
 from django.db import models
+
+from users.validators import CountryCodeValidator
 
 
 class Profile(models.Model):
     login = models.CharField(
         max_length=30,
-        validators=[RegexValidator(r"[a-zA-Z0-9-]+")],
+        validators=[RegexValidator(r"^[a-zA-Z0-9-]+$")],
     )
     email = models.EmailField(max_length=50)
     password = models.CharField(
         max_length=100,
         validators=[
-            MinLengthValidator(6),
-            MaxLengthValidator(100),
-            RegexValidator(r"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).+$"),
+            RegexValidator(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{6,100}$"),
         ],
     )
     # ruff: noqa: DJ001 N815
     countryCode = models.CharField(
         max_length=2,
-        validators=[RegexValidator(r"[a-zA-Z]{2}")],
+        validators=[RegexValidator(r"[a-zA-Z]{2}"), CountryCodeValidator()],
     )
     isPublic = models.BooleanField()
     phone = models.CharField(
         max_length=20,
-        validators=[RegexValidator(r"\+[\d]+")],
+        validators=[MaxLengthValidator(20), RegexValidator(r"\+[\d]+")],
         blank=True,
         null=True,
     )
@@ -39,3 +38,30 @@ class Profile(models.Model):
 
     def is_authenticated(self):
         return True
+
+    @classmethod
+    def check_unique(cls, user_id, validated_data):
+        errors = {}
+
+        if (
+            cls.objects.filter(login=validated_data.get("login"))
+            .exclude(id=user_id)
+            .exists()
+        ):
+            errors["login"] = {"User with this login already exists"}
+
+        if (
+            cls.objects.filter(email=validated_data.get("email"))
+            .exclude(id=user_id)
+            .exists()
+        ):
+            errors["email"] = {"User with this email already exists"}
+
+        if (
+            cls.objects.filter(phone=validated_data.get("phone"))
+            .exclude(id=user_id)
+            .exists()
+        ):
+            errors["phone"] = {"User with this phone already exists"}
+
+        return errors

@@ -1,16 +1,27 @@
 import jwt
 from django.conf import settings
-from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.authentication import (
+    BaseAuthentication,
+)
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 from users.models import Profile
 
 
 class JWTAuthentication(BaseAuthentication):
+    def authenticate_header(self, request):
+        return "Provide a valid token in the 'Authorization' header"
+
     def authenticate(self, request):
         token = request.headers.get("Authorization", "").split("Bearer ")[-1]
 
         if not token:
+            if IsAuthenticated in getattr(
+                request.resolver_match.func.cls, "permission_classes", []
+            ):
+                raise NotAuthenticated
+
             return None
 
         try:
@@ -18,7 +29,7 @@ class JWTAuthentication(BaseAuthentication):
                 token, settings.SECRET_KEY, algorithms=["HS256"]
             )
 
-            user = Profile.objects.get(login=payload["login"])
+            user = Profile.objects.get(id=payload["id"])
         except Profile.DoesNotExist:
             error = "Invalid token"
             raise AuthenticationFailed(error) from None

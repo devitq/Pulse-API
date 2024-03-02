@@ -95,6 +95,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REGIONS = ["Europe", "Africa", "Americas", "Oceania", "Asia"]
+
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
@@ -115,8 +117,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "users.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.BasicAuthentication",
     ),
 }
 
