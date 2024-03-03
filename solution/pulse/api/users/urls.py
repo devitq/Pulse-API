@@ -42,5 +42,5 @@ urlpatterns = [
         "me/updatePassword",
         api.users.views.PasswordChangeApiView.as_view(),
         name="password-change",
-    )
+    ),
 ]

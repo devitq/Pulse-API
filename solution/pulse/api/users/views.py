@@ -210,7 +210,10 @@ class PasswordChangeApiView(APIView):
             old_password = serializer.validated_data.get("oldPassword")
             new_password = serializer.validated_data.get("newPassword")
 
-            if bcrypt.checkpw(old_password.encode("utf-8"), request.user.password.encode("utf-8")):
+            if bcrypt.checkpw(
+                old_password.encode("utf-8"),
+                request.user.password.encode("utf-8"),
+            ):
                 password_hash = bcrypt.hashpw(
                     new_password.encode("utf-8"), bcrypt.gensalt()
                 ).decode("utf-8")
