@@ -20,17 +20,27 @@ urlpatterns = [
     ),
     path(
         "profiles/<str:login>",
-        api.users.views.ProfileAPIView.as_view(),
+        api.users.views.ProfilesApiView.as_view(),
         name="profiles",
     ),
     path(
         "friends/add",
-        api.users.views.AddFriendAPIView.as_view(),
+        api.users.views.AddFriendApiView.as_view(),
         name="add-friend",
     ),
     path(
         "friends/remove",
-        api.users.views.RemoveFriendAPIView.as_view(),
+        api.users.views.RemoveFriendApiView.as_view(),
         name="remove-friend",
     ),
+    path(
+        "friends",
+        api.users.views.FriendsListApiView.as_view(),
+        name="friends-list",
+    ),
+    path(
+        "me/updatePassword",
+        api.users.views.PasswordChangeApiView.as_view(),
+        name="password-change",
+    )
 ]

@@ -5,13 +5,22 @@ import jwt
 from django.conf import settings
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.exceptions import (
+    NotAuthenticated,
+    NotFound,
+    PermissionDenied,
+    ValidationError,
+)
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.users.models import Profile
+from api.users.models import Friendship, Profile
 from api.users.permissions import CanAccessProfile
 from api.users.serializers import (
+    FriendshipSerializer,
+    PasswordChangeSerializer,
     ProfileSerializer,
     PublicProfileSerializer,
     UpdateProfileSerializer,
@@ -25,7 +34,9 @@ class RegisterUserApiView(APIView):
         if serializer.is_valid():
             errors = Profile.check_unique(None, serializer.validated_data)
             if errors:
-                return Response(errors, status=status.HTTP_409_CONFLICT)
+                return Response(
+                    {"reason:": str(errors)}, status=status.HTTP_409_CONFLICT
+                )
 
             password = serializer.validated_data["password"]
             password_hash = bcrypt.hashpw(
@@ -50,7 +61,7 @@ class RegisterUserApiView(APIView):
 
             return Response(profile, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        raise ValidationError(serializer.errors)
 
 
 class SigninUserApiView(APIView):
@@ -63,14 +74,12 @@ class SigninUserApiView(APIView):
             if not bcrypt.checkpw(
                 password.encode("utf-8"), user.password.encode("utf-8")
             ):
-                return Response(
+                raise NotAuthenticated(
                     {"error": "Invalid credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
                 )
         else:
-            return Response(
+            raise NotAuthenticated(
                 {"error": "Invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         token = jwt.encode(
@@ -102,10 +111,14 @@ class ProfileMeApiView(APIView):
         if serializer.is_valid():
             errors = Profile.check_unique(user.id, serializer.validated_data)
             if errors:
-                return Response(errors, status=status.HTTP_409_CONFLICT)
+                return Response(
+                    {"reason:": str(errors)}, status=status.HTTP_409_CONFLICT
+                )
             serializer.save()
+
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        raise ValidationError(serializer.errors)
 
     def _get_profile_data(self, user):
         profile = {
@@ -123,7 +136,7 @@ class ProfileMeApiView(APIView):
         return profile
 
 
-class ProfileAPIView(APIView):
+class ProfilesApiView(APIView):
     permission_classes = [IsAuthenticated, CanAccessProfile]
 
     def get(self, request, login):
@@ -133,13 +146,12 @@ class ProfileAPIView(APIView):
             serializer = PublicProfileSerializer(profile)
             return Response(serializer.data)
         except Profile.DoesNotExist:
-            return Response(
+            raise PermissionDenied(
                 {"detail": "Profile not found."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            ) from None
 
 
-class AddFriendAPIView(APIView):
+class AddFriendApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -152,13 +164,12 @@ class AddFriendAPIView(APIView):
                 status=status.HTTP_200_OK,
             )
         except Profile.DoesNotExist:
-            return Response(
+            raise NotFound(
                 {"detail": "Profile not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            ) from None
 
 
-class RemoveFriendAPIView(APIView):
+class RemoveFriendApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -171,7 +182,43 @@ class RemoveFriendAPIView(APIView):
                 status=status.HTTP_200_OK,
             )
         except Profile.DoesNotExist:
-            return Response(
+            raise NotFound(
                 {"detail": "Profile not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            ) from None
+
+
+class FriendsListApiView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FriendshipSerializer
+
+    def get_queryset(self):
+        limit = int(self.request.query_params.get("limit", 5))
+        offset = int(self.request.query_params.get("offset", 0))
+
+        return Friendship.objects.filter(from_profile=self.request.user)[
+            offset : offset + limit
+        ]
+
+
+class PasswordChangeApiView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data)
+
+        if serializer.is_valid():
+            old_password = serializer.validated_data.get("oldPassword")
+            new_password = serializer.validated_data.get("newPassword")
+
+            if bcrypt.checkpw(old_password.encode("utf-8"), request.user.password.encode("utf-8")):
+                password_hash = bcrypt.hashpw(
+                    new_password.encode("utf-8"), bcrypt.gensalt()
+                ).decode("utf-8")
+                request.user.password = password_hash
+                request.user.save()
+
+                return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+            raise PermissionDenied({"error": "Invalid old password"})
+
+        raise ValidationError(serializer.errors)

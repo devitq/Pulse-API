@@ -15,15 +15,13 @@ class JWTAuthentication(BaseAuthentication):
         return "Provide a valid token in the 'Authorization' header"
 
     def authenticate(self, request):
+        if not IsAuthenticated in getattr(request.resolver_match.func.cls, "permission_classes", []):
+            return None
+
         token = request.headers.get("Authorization", "").split("Bearer ")[-1]
 
         if not token:
-            if IsAuthenticated in getattr(
-                request.resolver_match.func.cls, "permission_classes", []
-            ):
-                raise NotAuthenticated
-
-            return None
+            raise NotAuthenticated
 
         try:
             payload = jwt.decode(

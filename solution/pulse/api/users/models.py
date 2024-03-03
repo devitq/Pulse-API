@@ -28,11 +28,12 @@ class Profile(models.Model):
     phone = models.CharField(
         max_length=20,
         validators=[MaxLengthValidator(20), RegexValidator(r"\+[\d]+")],
-        blank=True,
         null=True,
     )
-    image = models.URLField(max_length=200, blank=True, null=True)
-    friends = models.ManyToManyField("self", blank=True, symmetrical=False)
+    image = models.URLField(max_length=200, null=True)
+    friends = models.ManyToManyField(
+        "self", through="Friendship", blank=True, symmetrical=False
+    )
 
     def __str__(self):
         return self.login
@@ -76,3 +77,16 @@ class Profile(models.Model):
             errors["phone"] = {"User with this phone already exists"}
 
         return errors
+
+
+class Friendship(models.Model):
+    from_profile = models.ForeignKey(
+        Profile, related_name="friendship_from", on_delete=models.CASCADE
+    )
+    to_profile = models.ForeignKey(
+        Profile, related_name="friendship_to", on_delete=models.CASCADE
+    )
+    addedAt = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.from_profile} -> {self.to_profile}"
