@@ -6,7 +6,7 @@ from api.countries.models import Country
 from api.countries.serializers import CountrySerializer
 
 
-class CountryListView(ListAPIView):
+class CountryListApiView(ListAPIView):
     queryset = Country.objects.all().order_by("alpha2")
     serializer_class = CountrySerializer
 
@@ -28,7 +28,7 @@ class CountryListView(ListAPIView):
         return queryset
 
 
-class CountryByAlpha2View(RetrieveAPIView):
+class CountryByAlpha2ApiView(RetrieveAPIView):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
     lookup_field = "alpha2"
