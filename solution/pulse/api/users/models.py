@@ -32,12 +32,23 @@ class Profile(models.Model):
         null=True,
     )
     image = models.URLField(max_length=200, blank=True, null=True)
+    friends = models.ManyToManyField("self", blank=True, symmetrical=False)
 
     def __str__(self):
         return self.login
 
     def is_authenticated(self):
         return True
+
+    def add_friend(self, user):
+        if self != user:
+            self.friends.add(user)
+
+    def remove_friend(self, user):
+        self.friends.remove(user)
+
+    def check_for_friendship(self, user):
+        return self.friends.filter(pk=user.pk).exists()
 
     @classmethod
     def check_unique(cls, user_id, validated_data):

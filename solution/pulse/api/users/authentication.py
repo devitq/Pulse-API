@@ -1,3 +1,4 @@
+import bcrypt
 import jwt
 from django.conf import settings
 from rest_framework.authentication import (
@@ -30,6 +31,13 @@ class JWTAuthentication(BaseAuthentication):
             )
 
             user = Profile.objects.get(id=payload["id"])
+
+            if not bcrypt.checkpw(
+                payload["password"].encode("utf-8"),
+                user.password.encode("utf-8"),
+            ):
+                error = "Token has expired"
+                raise AuthenticationFailed(error)
         except Profile.DoesNotExist:
             error = "Invalid token"
             raise AuthenticationFailed(error) from None

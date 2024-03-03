@@ -10,7 +10,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.users.models import Profile
-from api.users.serializers import ProfileSerializer, UpdateProfileSerializer
+from api.users.permissions import CanAccessProfile
+from api.users.serializers import (
+    ProfileSerializer,
+    PublicProfileSerializer,
+    UpdateProfileSerializer,
+)
 
 
 class RegisterUserApiView(APIView):
@@ -116,3 +121,57 @@ class ProfileMeApiView(APIView):
             profile["image"] = user.image
 
         return profile
+
+
+class ProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated, CanAccessProfile]
+
+    def get(self, request, login):
+        try:
+            profile = Profile.objects.get(login=login)
+            self.check_object_permissions(request, profile)
+            serializer = PublicProfileSerializer(profile)
+            return Response(serializer.data)
+        except Profile.DoesNotExist:
+            return Response(
+                {"detail": "Profile not found."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+
+class AddFriendAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            login = request.data.get("login")
+            profile = Profile.objects.get(login=login)
+            request.user.add_friend(profile)
+            return Response(
+                {"status": "ok"},
+                status=status.HTTP_200_OK,
+            )
+        except Profile.DoesNotExist:
+            return Response(
+                {"detail": "Profile not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class RemoveFriendAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            login = request.data.get("login")
+            profile = Profile.objects.get(login=login)
+            request.user.remove_friend(profile)
+            return Response(
+                {"status": "ok"},
+                status=status.HTTP_200_OK,
+            )
+        except Profile.DoesNotExist:
+            return Response(
+                {"detail": "Profile not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )

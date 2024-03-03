@@ -16,5 +16,21 @@ urlpatterns = [
     path(
         "me/profile",
         api.users.views.ProfileMeApiView.as_view(),
-    )
+        name="profile-me",
+    ),
+    path(
+        "profiles/<str:login>",
+        api.users.views.ProfileAPIView.as_view(),
+        name="profiles",
+    ),
+    path(
+        "friends/add",
+        api.users.views.AddFriendAPIView.as_view(),
+        name="add-friend",
+    ),
+    path(
+        "friends/remove",
+        api.users.views.RemoveFriendAPIView.as_view(),
+        name="remove-friend",
+    ),
 ]
