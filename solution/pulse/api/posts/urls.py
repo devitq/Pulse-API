@@ -23,4 +23,14 @@ urlpatterns = [
         api.posts.views.UserFeedListApiView.as_view(),
         name="user-feed",
     ),
+    path(
+        "/<str:post_id>/like",
+        api.posts.views.LikePostApiView.as_view(),
+        name="like-post",
+    ),
+    path(
+        "/<str:post_id>/dislike",
+        api.posts.views.DislikePostApiView.as_view(),
+        name="like-post",
+    ),
 ]

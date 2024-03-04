@@ -82,3 +82,39 @@ class UserFeedListApiView(ListAPIView):
         offset = serializer.validated_data.get("offset")
 
         return user.posts.all()[offset: offset + limit]
+
+
+class LikePostApiView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        try:
+            post = Post.objects.get(id=post_id)
+            self.check_object_permissions(request, post)
+            request.user.like_post(post)
+            return Response(
+                {"status": "ok"},
+                status=status.HTTP_200_OK,
+            )
+        except Post.DoesNotExist:
+            raise NotFound(
+                {"detail": "Post not found."},
+            ) from None
+
+
+class DislikePostApiView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        try:
+            post = Post.objects.get(id=post_id)
+            self.check_object_permissions(request, post)
+            request.user.dislike_post(post)
+            return Response(
+                {"status": "ok"},
+                status=status.HTTP_200_OK,
+            )
+        except Post.DoesNotExist:
+            raise NotFound(
+                {"detail": "Post not found."},
+            ) from None

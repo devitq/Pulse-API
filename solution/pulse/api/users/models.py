@@ -56,6 +56,7 @@ class Profile(models.Model):
         return self.liked_posts.add(post)
 
     def dislike_post(self, post):
+        print(self, post)
         self.liked_posts.remove(post)
         return self.disliked_posts.add(post)
 
