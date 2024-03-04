@@ -1,3 +1,5 @@
+import uuid
+
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import ListAPIView
@@ -26,6 +28,11 @@ class PostDetailApiView(APIView):
     permission_classes = [IsAuthenticated, CanAccessPost]
 
     def get(self, request, post_id):
+        try:
+            uuid.UUID(post_id)
+        except ValueError:
+            raise NotFound from None
+
         try:
             post = Post.objects.get(id=post_id)
             self.check_object_permissions(request, post)
@@ -83,13 +90,18 @@ class UserFeedListApiView(ListAPIView):
         limit = serializer.validated_data.get("limit")
         offset = serializer.validated_data.get("offset")
 
-        return user.posts.order_by("-createdAt").all()[offset : offset + limit]
+        return user.posts.order_by("-createdAt").all()[offset: offset + limit]
 
 
 class LikePostApiView(APIView):
     permission_classes = [IsAuthenticated, CanAccessPost]
 
     def post(self, request, post_id):
+        try:
+            uuid.UUID(post_id)
+        except ValueError:
+            raise NotFound from None
+
         try:
             post = Post.objects.get(id=post_id)
             self.check_object_permissions(request, post)
@@ -108,6 +120,11 @@ class DislikePostApiView(APIView):
     permission_classes = [IsAuthenticated, CanAccessPost]
 
     def post(self, request, post_id):
+        try:
+            uuid.UUID(post_id)
+        except ValueError:
+            raise NotFound from None
+
         try:
             post = Post.objects.get(id=post_id)
             self.check_object_permissions(request, post)

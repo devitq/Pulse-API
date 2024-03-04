@@ -9,7 +9,7 @@ urlpatterns = [
         name="create-post",
     ),
     path(
-        "/<uuid:post_id>",
+        "/<str:post_id>",
         api.posts.views.PostDetailApiView.as_view(),
         name="post-detail",
     ),
