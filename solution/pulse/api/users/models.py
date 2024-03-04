@@ -51,6 +51,14 @@ class Profile(models.Model):
     def check_for_friendship(self, user):
         return self.friends.filter(pk=user.pk).exists()
 
+    def like_post(self, post):
+        self.disliked_posts.remove(post)
+        return self.liked_posts.add(post)
+
+    def dislike_post(self, post):
+        self.liked_posts.remove(post)
+        return self.disliked_posts.add(post)
+
     @classmethod
     def check_unique(cls, user_id, validated_data):
         errors = {}

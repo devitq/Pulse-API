@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "api.ping.apps.PingConfig",
     "api.countries.apps.CountriesConfig",
     "api.users.apps.UsersConfig",
+    "api.posts.apps.PostsConfig",
 ]
 
 MIDDLEWARE = [
@@ -123,6 +124,8 @@ REST_FRAMEWORK = {
 }
 
 APPEND_SLASH = False
+
+MAX_TAG_LENGTH = 20
 
 if DEBUG:
     INSTALLED_APPS.insert(0, "debug_toolbar")
