@@ -18,7 +18,7 @@ class CreatePostApiView(APIView):
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         raise ValidationError(serializer.errors)
 
 
@@ -52,7 +52,9 @@ class MyFeedListApiView(ListAPIView):
         limit = serializer.validated_data.get("limit")
         offset = serializer.validated_data.get("offset")
 
-        return self.request.user.posts.all()[offset: offset + limit]
+        return self.request.user.posts.order_by("-createdAt").all()[
+            offset: offset + limit
+        ]
 
 
 class UserFeedListApiView(ListAPIView):
@@ -81,11 +83,11 @@ class UserFeedListApiView(ListAPIView):
         limit = serializer.validated_data.get("limit")
         offset = serializer.validated_data.get("offset")
 
-        return user.posts.all()[offset: offset + limit]
+        return user.posts.order_by("-createdAt").all()[offset : offset + limit]
 
 
 class LikePostApiView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanAccessPost]
 
     def post(self, request, post_id):
         try:
@@ -103,7 +105,7 @@ class LikePostApiView(APIView):
 
 
 class DislikePostApiView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanAccessPost]
 
     def post(self, request, post_id):
         try:

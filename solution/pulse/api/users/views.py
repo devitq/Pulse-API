@@ -116,7 +116,7 @@ class ProfileMeApiView(APIView):
                 )
             serializer.save()
 
-            return Response(serializer.data)
+            return Response(self._get_profile_data(user))
 
         raise ValidationError(serializer.errors)
 
@@ -202,9 +202,9 @@ class FriendsListApiView(ListAPIView):
         limit = serializer.validated_data.get("limit")
         offset = serializer.validated_data.get("offset")
 
-        return Friendship.objects.filter(from_profile=self.request.user)[
-            offset: offset + limit
-        ]
+        return Friendship.objects.order_by("-addedAt").filter(
+            from_profile=self.request.user
+        )[offset: offset + limit]
 
 
 class PasswordChangeApiView(APIView):

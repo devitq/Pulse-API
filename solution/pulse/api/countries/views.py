@@ -11,20 +11,22 @@ class CountryListApiView(ListAPIView):
     serializer_class = CountrySerializer
 
     def filter_queryset(self, queryset):
-        regions = self.request.query_params.get("region")
+        regions = self.request.query_params.getlist("region")
+
+        if regions == [""]:
+            return queryset
+
         if regions:
-            regions_list = regions.split(",")
             invalid_regions = [
-                region
-                for region in regions_list
-                if region not in settings.REGIONS
+                region for region in regions if region not in settings.REGIONS
             ]
             if invalid_regions:
                 invalid_regions_str = ", ".join(invalid_regions)
                 error_message = f"Invalid region(s): {invalid_regions_str}"
                 raise ValidationError(error_message)
 
-            queryset = queryset.filter(region__in=regions_list)
+            queryset = queryset.filter(region__in=regions)
+
         return queryset
 
 

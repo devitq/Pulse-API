@@ -6,7 +6,7 @@ from api.posts.models import Post
 
 class PostSerializer(serializers.ModelSerializer):
     # ruff: noqa: N815
-    author = serializers.ReadOnlyField(source="author.username")
+    author = serializers.SerializerMethodField()
     likesCount = serializers.SerializerMethodField()
     dislikesCount = serializers.SerializerMethodField()
 
@@ -30,7 +30,14 @@ class PostSerializer(serializers.ModelSerializer):
     def get_dislikesCount(self, obj):
         return obj.dislikes.count()
 
+    def get_author(self, obj):
+        return obj.author.login
+
     def validate_tags(self, value):
+        if not isinstance(value, list):
+            error = "Tags must be provided as a list."
+            raise serializers.ValidationError(error)
+
         for tag in value:
             if len(tag) > settings.MAX_TAG_LENGTH:
                 error = "Each tag must be 20 characters or fewer."

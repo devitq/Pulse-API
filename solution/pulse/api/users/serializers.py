@@ -22,8 +22,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            "login",
-            "email",
             "countryCode",
             "isPublic",
             "phone",

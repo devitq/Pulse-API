@@ -4,12 +4,12 @@ import api.posts.views
 
 urlpatterns = [
     path(
-        "/create",
+        "/new",
         api.posts.views.CreatePostApiView.as_view(),
         name="create-post",
     ),
     path(
-        "/<str:post_id>",
+        "/<uuid:post_id>",
         api.posts.views.PostDetailApiView.as_view(),
         name="post-detail",
     ),

@@ -27,7 +27,7 @@ class Profile(models.Model):
     isPublic = models.BooleanField()
     phone = models.CharField(
         max_length=20,
-        validators=[MaxLengthValidator(20), RegexValidator(r"\+[\d]+")],
+        validators=[MaxLengthValidator(20), RegexValidator(r"^\+\d+")],
         null=True,
     )
     image = models.URLField(max_length=200, null=True)
@@ -56,7 +56,6 @@ class Profile(models.Model):
         return self.liked_posts.add(post)
 
     def dislike_post(self, post):
-        print(self, post)
         self.liked_posts.remove(post)
         return self.disliked_posts.add(post)
 
@@ -82,7 +81,7 @@ class Profile(models.Model):
             cls.objects.filter(phone=validated_data.get("phone"))
             .exclude(id=user_id)
             .exists()
-        ):
+        ) and validated_data.get("phone") is not None:
             errors["phone"] = {"User with this phone already exists"}
 
         return errors

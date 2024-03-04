@@ -1,11 +1,14 @@
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import BasePermission
 
 
-class CanAccessPost(BasePermission):
-    message = "You do not have permission to access this post."
+class CustomForbidden(APIException):
     status_code = status.HTTP_404_NOT_FOUND
+    default_detail = "You dont have access to view this post."
 
+
+class CanAccessPost(BasePermission):
     def has_object_permission(self, request, view, obj):
         if (
             obj.author.isPublic
@@ -14,7 +17,7 @@ class CanAccessPost(BasePermission):
         ):
             return True
 
-        return False
+        raise CustomForbidden
 
 
 class CanAccessFeed(BasePermission):
@@ -29,4 +32,4 @@ class CanAccessFeed(BasePermission):
         ):
             return True
 
-        return False
+        raise CustomForbidden
