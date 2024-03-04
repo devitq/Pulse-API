@@ -4,7 +4,7 @@ import bcrypt
 import jwt
 from django.conf import settings
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.exceptions import (
     NotAuthenticated,
     NotFound,
@@ -192,11 +192,18 @@ class FriendsListApiView(ListAPIView):
     serializer_class = FriendshipSerializer
 
     def get_queryset(self):
-        limit = int(self.request.query_params.get("limit", 5))
-        offset = int(self.request.query_params.get("offset", 0))
+        class QueryParamsSerializer(serializers.Serializer):
+            limit = serializers.IntegerField(default=5)
+            offset = serializers.IntegerField(default=0)
+
+        serializer = QueryParamsSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        limit = serializer.validated_data.get("limit")
+        offset = serializer.validated_data.get("offset")
 
         return Friendship.objects.filter(from_profile=self.request.user)[
-            offset : offset + limit
+            offset: offset + limit
         ]
 
 

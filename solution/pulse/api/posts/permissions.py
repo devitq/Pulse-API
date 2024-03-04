@@ -15,3 +15,18 @@ class CanAccessPost(BasePermission):
             return True
 
         return False
+
+
+class CanAccessFeed(BasePermission):
+    message = "You do not have permission to access this feed."
+    status_code = status.HTTP_404_NOT_FOUND
+
+    def has_object_permission(self, request, view, obj):
+        if (
+            obj.isPublic
+            or obj.check_for_friendship(request.user)
+            or obj == request.user
+        ):
+            return True
+
+        return False

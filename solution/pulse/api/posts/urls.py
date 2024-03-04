@@ -13,4 +13,14 @@ urlpatterns = [
         api.posts.views.PostDetailApiView.as_view(),
         name="post-detail",
     ),
+    path(
+        "/feed/my",
+        api.posts.views.MyFeedListApiView.as_view(),
+        name="my-feed",
+    ),
+    path(
+        "/feed/<str:login>",
+        api.posts.views.UserFeedListApiView.as_view(),
+        name="user-feed",
+    ),
 ]
