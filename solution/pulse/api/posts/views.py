@@ -60,7 +60,7 @@ class MyFeedListApiView(ListAPIView):
         offset = serializer.validated_data.get("offset")
 
         return self.request.user.posts.order_by("-createdAt").all()[
-            offset: offset + limit
+            offset : offset + limit
         ]
 
 
@@ -90,7 +90,7 @@ class UserFeedListApiView(ListAPIView):
         limit = serializer.validated_data.get("limit")
         offset = serializer.validated_data.get("offset")
 
-        return user.posts.order_by("-createdAt").all()[offset: offset + limit]
+        return user.posts.order_by("-createdAt").all()[offset : offset + limit]
 
 
 class LikePostApiView(APIView):
