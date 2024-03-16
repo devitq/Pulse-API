@@ -106,8 +106,9 @@ class LikePostApiView(APIView):
             post = Post.objects.get(id=post_id)
             self.check_object_permissions(request, post)
             request.user.like_post(post)
+            serializer = PostSerializer(post)
             return Response(
-                {"status": "ok"},
+                serializer.data,
                 status=status.HTTP_200_OK,
             )
         except Post.DoesNotExist:
@@ -129,8 +130,9 @@ class DislikePostApiView(APIView):
             post = Post.objects.get(id=post_id)
             self.check_object_permissions(request, post)
             request.user.dislike_post(post)
+            serializer = PostSerializer(post)
             return Response(
-                {"status": "ok"},
+                serializer.data,
                 status=status.HTTP_200_OK,
             )
         except Post.DoesNotExist:

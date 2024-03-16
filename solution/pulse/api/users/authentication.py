@@ -32,9 +32,8 @@ class JWTAuthentication(BaseAuthentication):
 
             user = Profile.objects.get(id=payload["id"])
 
-            if not bcrypt.checkpw(
-                payload["password"].encode("utf-8"),
-                user.password.encode("utf-8"),
+            if payload["password"].encode("utf-8") != user.password.encode(
+                "utf-8"
             ):
                 error = "Token has expired"
                 raise AuthenticationFailed(error)

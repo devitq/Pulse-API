@@ -70,6 +70,11 @@ class SigninUserApiView(APIView):
         password = request.data.get("password")
         user = Profile.objects.filter(login=login).first()
 
+        if not password:
+            raise NotAuthenticated(
+                {"error": "Invalid credentials"},
+            )
+
         if user is not None:
             if not bcrypt.checkpw(
                 password.encode("utf-8"), user.password.encode("utf-8")
@@ -85,7 +90,7 @@ class SigninUserApiView(APIView):
         token = jwt.encode(
             {
                 "id": user.id,
-                "password": password,
+                "password": user.password,
                 "exp": timezone.now() + timedelta(hours=24),
             },
             settings.SECRET_KEY,
@@ -204,7 +209,7 @@ class FriendsListApiView(ListAPIView):
 
         return Friendship.objects.order_by("-addedAt").filter(
             from_profile=self.request.user
-        )[offset: offset + limit]
+        )[offset : offset + limit]
 
 
 class PasswordChangeApiView(APIView):
